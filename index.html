@@ -15,6 +15,15 @@
     <style>
         /* Lucideアイコンのサイズ調整用 */
         .lucide { width: 24px; height: 24px; vertical-align: middle; }
+        
+        /* 目が光るアニメーション */
+        @keyframes eye-glow {
+            0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 2px #fff); }
+            50% { opacity: 1; filter: drop-shadow(0 0 5px #ff0); }
+        }
+        .animate-eye-glow {
+            animation: eye-glow 2s infinite ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -63,15 +72,37 @@
             const [displayName, setDisplayName] = useState(INITIAL_NAME);
             const [selectedIndices, setSelectedIndices] = useState([]);
             const [isProcessing, setIsProcessing] = useState(false);
+            const [animalLayouts, setAnimalLayouts] = useState([]);
 
             useEffect(() => {
                 if (window.lucide) window.lucide.createIcons();
             });
 
+            // 現在の名前から出現する動物のリストを生成
             const appearingAnimals = useMemo(() => {
                 if (!currentName) return [];
                 return currentName.split('').map(char => CHAR_TO_ANIMAL[char.toUpperCase()]).filter(Boolean);
             }, [currentName]);
+
+            // 動物のランダムな配置を計算（左から右への順序を維持）
+            useEffect(() => {
+                const count = appearingAnimals.length;
+                if (count > 0) {
+                    const segmentWidth = 90 / count; // 画面幅を分割
+                    const layouts = appearingAnimals.map((_, i) => {
+                        const minLeft = 5 + (i * segmentWidth);
+                        const randomLeft = minLeft + Math.random() * (segmentWidth * 0.8); // 区画内で余裕を持たせて配置
+                        return {
+                            top: (Math.random() * 50 + 20).toFixed(2) + "%", // 20% to 70%
+                            left: randomLeft.toFixed(2) + "%",
+                            scale: (Math.random() * 0.5 + 0.75).toFixed(2), // 0.75 to 1.25
+                        };
+                    });
+                    setAnimalLayouts(layouts);
+                } else {
+                    setAnimalLayouts([]);
+                }
+            }, [appearingAnimals]);
 
             const resetGame = () => {
                 setCurrentName(INITIAL_NAME);
@@ -112,7 +143,6 @@
                 if (selectedAnimals.length === 1) {
                     const animal = selectedAnimals[0];
                     if (animal.pattern === 2) {
-                        // 逃走: 名前を空白にする
                         nextName = "";
                         nextDisplay = { type: 'escape', text: '逃げられた！' };
                     } else {
@@ -124,7 +154,6 @@
                     const hasDuplicate = new Set(species).size !== species.length;
 
                     if (hasDuplicate) {
-                        // 逃走: 名前を空白にする
                         nextName = "";
                         nextDisplay = { type: 'escape', text: '仲間割れして逃げられた！' };
                     } else {
@@ -137,7 +166,6 @@
                     }
                 }
 
-                // 即座に状態を更新
                 setDisplayName(nextDisplay.type === 'escape' ? "" : nextName);
                 setDisplayImage(nextDisplay);
                 setCurrentName(nextName);
@@ -145,19 +173,21 @@
             };
 
             const AnimalImage = ({ animal, className = "", style = {} }) => {
-                const src = `images/${animal.name}_${animal.pattern}.PNG`;
+                if (!animal) return null;
+                const src = `images/${animal.name}_${animal.pattern}.png`;
                 return (
                     <div className={`relative overflow-hidden bg-gray-100 flex items-center justify-center ${className}`} style={style}>
                         <img 
                             src={src} 
                             alt={animal.name} 
-                            className="w-full h-full object-contain"
+                            className="w-full h-full object-contain pointer-events-none"
+                            draggable="false"
                             onError={(e) => {
                                 e.target.style.display = 'none';
                                 e.target.nextSibling.style.display = 'flex';
                             }}
                         />
-                        <div className="hidden absolute inset-0 flex items-center justify-center text-4xl bg-white">
+                        <div className="hidden absolute inset-0 flex items-center justify-center text-4xl bg-white select-none">
                             {animal.emoji}
                         </div>
                     </div>
@@ -211,9 +241,11 @@
                         )}
                         {count === 4 && (
                             <React.Fragment>
+                                {/* 1番目: 左1/3 */}
                                 <div className="w-[33.33%] h-full overflow-hidden border-r border-white">
                                     <AnimalImage animal={animals[0]} className="w-[300%] h-full max-w-none" />
                                 </div>
+                                {/* 2・3番目: 中央1/3の上下 */}
                                 <div className="w-[33.33%] h-full flex flex-col border-r border-white">
                                     <div className="h-1/2 w-full overflow-hidden border-b border-white">
                                         <AnimalImage animal={animals[1]} className="w-[300%] h-[200%] max-w-none" style={{ transform: 'translate(-33.33%, 0)' }} />
@@ -222,6 +254,7 @@
                                         <AnimalImage animal={animals[2]} className="w-[300%] h-[200%] max-w-none" style={{ transform: 'translate(-33.33%, -50%)' }} />
                                     </div>
                                 </div>
+                                {/* 4番目: 右1/3 */}
                                 <div className="w-[33.33%] h-full overflow-hidden">
                                     <AnimalImage animal={animals[3]} className="w-[300%] h-full max-w-none" style={{ transform: 'translateX(-66.66%)' }} />
                                 </div>
@@ -255,42 +288,68 @@
                                     <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center p-2 border-4 border-slate-100">
                                         <CompositeView data={displayImage} />
                                     </div>
-                                    <div className="flex flex-col justify-center items-center bg-indigo-50 rounded-2xl p-8 border-4 border-indigo-100">
+                                    <div className="flex flex-col justify-center items-center bg-indigo-50 rounded-2xl p-8 border-4 border-indigo-100 min-h-[160px]">
                                         <span className="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">Current Identity</span>
                                         <span className="text-4xl font-black text-indigo-900 tracking-widest break-all text-center h-12 flex items-center">{displayName}</span>
+                                        {displayName === "UMA" && (
+                                            <div className="text-red-600 text-sm font-bold mt-2 animate-pulse">
+                                                こ、これは未確認生物だ！
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Shadow Area</label>
-                                    <div className="flex flex-wrap gap-3 p-4 bg-slate-100 rounded-2xl min-h-[120px] justify-center items-center relative">
-                                        {appearingAnimals.map((animal, idx) => (
-                                            <button key={`${currentName}-${idx}`} onClick={() => toggleSelect(idx)} disabled={isProcessing} className={`relative w-20 h-20 rounded-xl transition-all border-2 ${selectedIndices.includes(idx) ? 'border-indigo-500 ring-4 ring-indigo-200 scale-105' : 'border-transparent'}`}>
-                                                <div className="absolute inset-0 bg-slate-800 flex items-center justify-center p-2">
-                                                    <div className="w-full h-full filter brightness-0 invert opacity-60">
-                                                        <AnimalImage animal={animal} className="bg-transparent" />
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Shadow Area (Select Eyes)</label>
+                                    <div className="relative w-full h-[240px] bg-black rounded-2xl overflow-hidden border-4 border-slate-900 cursor-crosshair">
+                                        {appearingAnimals.map((animal, idx) => {
+                                            const layout = animalLayouts[idx] || { top: '50%', left: '50%', scale: '1' };
+                                            const isSelected = selectedIndices.includes(idx);
+                                            return (
+                                                <button
+                                                    key={`${currentName}-${idx}`}
+                                                    onClick={() => toggleSelect(idx)}
+                                                    disabled={isProcessing}
+                                                    style={{ 
+                                                        position: 'absolute',
+                                                        top: layout.top,
+                                                        left: layout.left,
+                                                        transform: `translate(-50%, -50%) scale(${layout.scale})`,
+                                                        zIndex: isSelected ? 10 : 1
+                                                    }}
+                                                    className={`group transition-all duration-300 p-4 rounded-full ${isSelected ? 'ring-2 ring-indigo-500' : ''}`}
+                                                >
+                                                    {/* 光る目 */}
+                                                    <div className="flex gap-4 items-center justify-center">
+                                                        <div className={`w-1.5 h-1.5 bg-yellow-100 rounded-full animate-eye-glow ${isSelected ? 'bg-indigo-400' : ''}`}></div>
+                                                        <div className={`w-1.5 h-1.5 bg-yellow-100 rounded-full animate-eye-glow ${isSelected ? 'bg-indigo-400' : ''}`}></div>
                                                     </div>
-                                                </div>
-                                                {selectedIndices.includes(idx) && <div className="absolute top-1 right-1 bg-indigo-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{selectedIndices.indexOf(idx) + 1}</div>}
-                                            </button>
-                                        ))}
+                                                    {/* 選択順序の表示 */}
+                                                    {isSelected && (
+                                                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
+                                                            {selectedIndices.indexOf(idx) + 1}
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
                                         {appearingAnimals.length === 0 && (
-                                            <div className="text-slate-400 font-bold text-center animate-pulse">
+                                            <div className="absolute inset-0 flex items-center justify-center text-slate-600 font-bold text-sm select-none">
                                                 ここには動物がいないようです...
                                             </div>
                                         )}
                                     </div>
                                 </div>
-                                <button onClick={handleCapture} disabled={selectedIndices.length === 0 || isProcessing} className={`w-full py-4 rounded-2xl font-black text-xl shadow-lg ${selectedIndices.length > 0 && !isProcessing ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                                <button onClick={handleCapture} disabled={selectedIndices.length === 0 || isProcessing} className={`w-full py-4 rounded-2xl font-black text-xl shadow-lg transition-transform active:scale-95 ${selectedIndices.length > 0 && !isProcessing ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-400'}`}>
                                     CAPTURE ({selectedIndices.length})
                                 </button>
                             </div>
                         )}
                         {screen === 'clear' && (
                             <div className="flex flex-col items-center justify-center py-20 px-8 text-center animate-in zoom-in duration-500">
-                                <div className="w-48 h-48 mb-6 border-4 border-yellow-400 rounded-2xl overflow-hidden shadow-2xl">
-                                    <AnimalImage animal={ANIMAL_DATA.OUMA} pattern={1} className="w-full h-full" />
+                                <div className="w-48 h-48 mb-6 border-4 border-yellow-400 rounded-2xl overflow-hidden shadow-2xl bg-white">
+                                    <AnimalImage animal={{...ANIMAL_DATA.OUMA, pattern: 1}} className="w-full h-full" />
                                 </div>
-                                <h1 className="text-5xl font-black text-indigo-900 mb-8">お馬さん捕獲！</h1>
+                                <h1 className="text-5xl font-black text-indigo-900 mb-8 tracking-tighter">お馬さん捕獲！</h1>
                                 <button onClick={() => setScreen('title')} className="px-10 py-4 bg-slate-800 text-white font-bold rounded-full flex items-center gap-2 hover:bg-slate-900 transition-colors">
                                     <RefreshCw /> BACK TO TITLE
                                 </button>
