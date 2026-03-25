@@ -1,359 +1,301 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>oUMA-san Game</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://unpkg.com/lucide-react@0.294.0/umd/lucide-react.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>oUMA-san</title>
+    <!-- React, ReactDOM, Babel (JSXの変換用) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Lucideアイコンのサイズ調整用 */
+        .lucide { width: 24px; height: 24px; vertical-align: middle; }
+    </style>
 </head>
-<body>
-  <div id="root"></div>
+<body class="bg-slate-50">
+    <div id="root"></div>
 
-  <script type="text/babel">
-import React, { useState, useEffect, useMemo } from 'react';
-import { RefreshCw, CheckCircle2, Play } from 'lucide-react';
+    <script type="text/babel">
+        // Lucideアイコンのスタブコンポーネント（ブラウザ版用）
+        const RefreshCw = () => <i data-lucide="refresh-cw"></i>;
+        const CheckCircle2 = ({ size }) => <i data-lucide="check-circle-2" style={{width: size, height: size}}></i>;
+        const Play = ({ size }) => <i data-lucide="play" style={{width: size, height: size}}></i>;
 
-// --- 定数定義 ---
-const ANIMAL_DATA = {
-  ONEZUMI: { name: 'ONEZUMI', p1: 'B', p2: 'Y', emoji: '🖱️' },
-  OUSHI: { name: 'OUSHI', p1: 'D', p2: 'W', emoji: '🐂' },
-  OTORA: { name: 'OTORA', p1: 'F', p2: 'U', emoji: '🐅' },
-  OUSAGI: { name: 'OUSAGI', p1: 'H', p2: 'S', emoji: '🐇' },
-  OTATSU: { name: 'OTATSU', p1: 'J', p2: 'Q', emoji: '🐉' },
-  OHEBI: { name: 'OHEBI', p1: 'L', p2: 'O', emoji: '🐍' },
-  OUMA: { name: 'OUMA', p1: 'N', p2: 'M', emoji: '🐎' },
-  OHITSUJI: { name: 'OHITSUJI', p1: 'P', p2: 'K', emoji: '🐏' },
-  OSARU: { name: 'OSARU', p1: 'R', p2: 'I', emoji: '🐒' },
-  OTORI: { name: 'OTORI', p1: 'T', p2: 'G', emoji: '🐓' },
-  OINU: { name: 'OINU', p1: 'V', p2: 'E', emoji: '🐕' },
-  OINOSHISHI: { name: 'OINOSHISHI', p1: 'X', p2: 'C', emoji: '🐗' },
-  OTANUKI: { name: 'OTANUKI', p1: 'Z', p2: 'A', emoji: '🍃' },
-};
+        const { useState, useEffect, useMemo } = React;
 
-// アルファベットから動物とパターンを逆引きするマップ
-const CHAR_TO_ANIMAL = (() => {
-  const map = {};
-  Object.values(ANIMAL_DATA).forEach(data => {
-    map[data.p1] = { ...data, pattern: 1 };
-    map[data.p2] = { ...data, pattern: 2 };
-  });
-  return map;
-})();
+        // --- 定数定義 ---
+        const ANIMAL_DATA = {
+            ONEZUMI: { name: 'ONEZUMI', p1: 'B', p2: 'Y', emoji: '🖱️' },
+            OUSHI: { name: 'OUSHI', p1: 'D', p2: 'W', emoji: '🐂' },
+            OTORA: { name: 'OTORA', p1: 'F', p2: 'U', emoji: '🐅' },
+            OUSAGI: { name: 'OUSAGI', p1: 'H', p2: 'S', emoji: '🐇' },
+            OTATSU: { name: 'OTATSU', p1: 'J', p2: 'Q', emoji: '🐉' },
+            OHEBI: { name: 'OHEBI', p1: 'L', p2: 'O', emoji: '🐍' },
+            OUMA: { name: 'OUMA', p1: 'N', p2: 'M', emoji: '🐎' },
+            OHITSUJI: { name: 'OHITSUJI', p1: 'P', p2: 'K', emoji: '🐏' },
+            OSARU: { name: 'OSARU', p1: 'R', p2: 'I', emoji: '🐒' },
+            OTORI: { name: 'OTORI', p1: 'T', p2: 'G', emoji: '🐓' },
+            OINU: { name: 'OINU', p1: 'V', p2: 'E', emoji: '🐕' },
+            OINOSHISHI: { name: 'OINOSHISHI', p1: 'X', p2: 'C', emoji: '🐗' },
+            OTANUKI: { name: 'OTANUKI', p1: 'Z', p2: 'A', emoji: '🍃' },
+        };
 
-const INITIAL_NAME = "TOPPA";
+        const CHAR_TO_ANIMAL = (() => {
+            const map = {};
+            Object.values(ANIMAL_DATA).forEach(data => {
+                map[data.p1] = { ...data, pattern: 1 };
+                map[data.p2] = { ...data, pattern: 2 };
+            });
+            return map;
+        })();
 
-const App = () => {
-  const [screen, setScreen] = useState('title'); // 'title', 'game', 'clear'
-  const [currentName, setCurrentName] = useState(INITIAL_NAME);
-  const [displayImage, setDisplayImage] = useState(null); // { types: Array, composite: true/false }
-  const [displayName, setDisplayName] = useState(INITIAL_NAME);
-  const [selectedIndices, setSelectedIndices] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false);
+        const INITIAL_NAME = "TOPPA";
 
-  // 現在の名前から出現する動物の影リストを生成
-  const appearingAnimals = useMemo(() => {
-    return currentName.split('').map(char => CHAR_TO_ANIMAL[char.toUpperCase()]).filter(Boolean);
-  }, [currentName]);
+        const App = () => {
+            const [screen, setScreen] = useState('title');
+            const [currentName, setCurrentName] = useState(INITIAL_NAME);
+            const [displayImage, setDisplayImage] = useState(null);
+            const [displayName, setDisplayName] = useState(INITIAL_NAME);
+            const [selectedIndices, setSelectedIndices] = useState([]);
+            const [isProcessing, setIsProcessing] = useState(false);
 
-  const resetGame = () => {
-    setCurrentName(INITIAL_NAME);
-    setDisplayName(INITIAL_NAME);
-    setDisplayImage(null);
-    setSelectedIndices([]);
-    setIsProcessing(false);
-  };
+            // アイコンの再レンダリング用
+            useEffect(() => {
+                if (window.lucide) window.lucide.createIcons();
+            });
 
-  const handleStart = () => {
-    resetGame();
-    setScreen('game');
-  };
+            const appearingAnimals = useMemo(() => {
+                return currentName.split('').map(char => CHAR_TO_ANIMAL[char.toUpperCase()]).filter(Boolean);
+            }, [currentName]);
 
-  const toggleSelect = (index) => {
-    if (isProcessing) return;
-    setSelectedIndices(prev => {
-      if (prev.includes(index)) {
-        return prev.filter(i => i !== index);
-      }
-      if (prev.length >= 4) return prev;
-      return [...prev, index];
-    });
-  };
+            const resetGame = () => {
+                setCurrentName(INITIAL_NAME);
+                setDisplayName(INITIAL_NAME);
+                setDisplayImage(null);
+                setSelectedIndices([]);
+                setIsProcessing(false);
+            };
 
-  const handleCapture = () => {
-    if (selectedIndices.length === 0 || isProcessing) return;
+            const handleStart = () => {
+                resetGame();
+                setScreen('game');
+            };
 
-    setIsProcessing(true);
-    const selectedAnimals = selectedIndices.map(i => appearingAnimals[i]);
+            const toggleSelect = (index) => {
+                if (isProcessing) return;
+                setSelectedIndices(prev => {
+                    if (prev.includes(index)) return prev.filter(i => i !== index);
+                    if (prev.length >= 4) return prev;
+                    return [...prev, index];
+                });
+            };
 
-    // クリア判定: OUMA パターン1 (N) のみが選択されているか
-    if (selectedAnimals.length === 1 && selectedAnimals[0].name === 'OUMA' && selectedAnimals[0].pattern === 1) {
-      setTimeout(() => setScreen('clear'), 500);
-      return;
-    }
+            const handleCapture = () => {
+                if (selectedIndices.length === 0 || isProcessing) return;
+                setIsProcessing(true);
+                const selectedAnimals = selectedIndices.map(i => appearingAnimals[i]);
 
-    let nextName = "";
-    let nextDisplay = null;
+                if (selectedAnimals.length === 1 && selectedAnimals[0].name === 'OUMA' && selectedAnimals[0].pattern === 1) {
+                    setTimeout(() => setScreen('clear'), 500);
+                    return;
+                }
 
-    if (selectedAnimals.length === 1) {
-      const animal = selectedAnimals[0];
-      if (animal.pattern === 2) {
-        // パターン2は逃げる
-        nextName = currentName; // 名前は維持？ または変化なしを明示
-        nextDisplay = { type: 'escape', text: '逃げられた！' };
-      } else {
-        // パターン1はそのまま表示
-        nextName = animal.name;
-        nextDisplay = { animals: [animal], composite: false };
-      }
-    } else {
-      // 2～4体の場合
-      const species = selectedAnimals.map(a => a.name);
-      const hasDuplicate = new Set(species).size !== species.length;
+                let nextName = "";
+                let nextDisplay = null;
 
-      if (hasDuplicate) {
-        nextName = currentName;
-        nextDisplay = { type: 'escape', text: '仲間割れして逃げられた！' };
-      } else {
-        // 特殊合成判定: OHEBI, OTANUKI, OTORA, OSARU の順
-        const specialOrder = ['OHEBI', 'OTANUKI', 'OTORA', 'OSARU'];
-        const isSpecial = selectedAnimals.length === 4 && 
-                          selectedAnimals.every((a, idx) => a.name === specialOrder[idx]);
-        
-        nextName = isSpecial ? "ONUE" : "UMA";
-        nextDisplay = { animals: selectedAnimals, composite: true, count: selectedAnimals.length };
-      }
-    }
+                if (selectedAnimals.length === 1) {
+                    const animal = selectedAnimals[0];
+                    if (animal.pattern === 2) {
+                        nextName = currentName;
+                        nextDisplay = { type: 'escape', text: '逃げられた！' };
+                    } else {
+                        nextName = animal.name;
+                        nextDisplay = { animals: [animal], composite: false };
+                    }
+                } else {
+                    const species = selectedAnimals.map(a => a.name);
+                    const hasDuplicate = new Set(species).size !== species.length;
 
-    // 画面更新
-    setDisplayName(nextDisplay.type === 'escape' ? "逃走" : nextName);
-    setDisplayImage(nextDisplay);
+                    if (hasDuplicate) {
+                        nextName = currentName;
+                        nextDisplay = { type: 'escape', text: '仲間割れして逃げられた！' };
+                    } else {
+                        const specialOrder = ['OHEBI', 'OTANUKI', 'OTORA', 'OSARU'];
+                        const isSpecial = selectedAnimals.length === 4 && 
+                                          selectedAnimals.every((a, idx) => a.name === specialOrder[idx]);
+                        
+                        nextName = isSpecial ? "ONUE" : "UMA";
+                        nextDisplay = { animals: selectedAnimals, composite: true, count: selectedAnimals.length };
+                    }
+                }
 
-    const finalize = () => {
-      if (nextDisplay.type !== 'escape') {
-        setCurrentName(nextName);
-      }
-      setSelectedIndices([]);
-      setIsProcessing(false);
-    };
+                setDisplayName(nextDisplay.type === 'escape' ? "逃走" : nextName);
+                setDisplayImage(nextDisplay);
 
-    // 2秒待機 or クリックで次へ (簡易的にsetTimeoutのみ実装)
-    setTimeout(finalize, 2000);
-  };
+                setTimeout(() => {
+                    if (nextDisplay.type !== 'escape') setCurrentName(nextName);
+                    setSelectedIndices([]);
+                    setIsProcessing(false);
+                }, 2000);
+            };
 
-  const AnimalImage = ({ animal, className = "", style = {} }) => {
-    const src = `images/${animal.name}_${animal.pattern}.png`;
-    return (
-      <div className={`relative overflow-hidden bg-gray-100 flex items-center justify-center ${className}`} style={style}>
-        <img 
-          src={src} 
-          alt={animal.name} 
-          className="w-full h-full object-contain"
-          onError={(e) => {
-            e.target.style.display = 'none';
-            e.target.nextSibling.style.display = 'flex';
-          }}
-        />
-        <div className="hidden absolute inset-0 flex items-center justify-center text-4xl bg-white">
-          {animal.emoji}
-        </div>
-      </div>
-    );
-  };
-
-  const CompositeView = ({ data }) => {
-    if (!data || data.type === 'escape') {
-      return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-200 text-gray-500 rounded-lg">
-          {data?.type === 'escape' ? (
-            <span className="text-xl font-bold text-red-500">{data.text}</span>
-          ) : (
-            <span className="text-sm">捕獲エリア</span>
-          )}
-        </div>
-      );
-    }
-
-    const { animals, composite, count } = data;
-
-    if (!composite) {
-      return <AnimalImage animal={animals[0]} className="w-full h-full rounded-lg border-2 border-indigo-500 shadow-lg" />;
-    }
-
-    // 合成ロジック
-    return (
-      <div className="w-full h-full relative rounded-lg border-2 border-indigo-500 shadow-lg overflow-hidden flex">
-        {count === 2 && (
-          <>
-            <div className="w-1/2 h-full overflow-hidden border-r border-white">
-              <AnimalImage animal={animals[0]} className="w-[200%] h-full max-w-none" style={{ transform: 'translateX(0)' }} />
-            </div>
-            <div className="w-1/2 h-full overflow-hidden">
-              <AnimalImage animal={animals[1]} className="w-[200%] h-full max-w-none" style={{ transform: 'translateX(-50%)' }} />
-            </div>
-          </>
-        )}
-        {count === 3 && (
-          <>
-            <div className="w-1/3 h-full overflow-hidden border-r border-white">
-              <AnimalImage animal={animals[0]} className="w-[300%] h-full max-w-none" />
-            </div>
-            <div className="w-2/3 h-full flex flex-col">
-              <div className="h-1/2 w-full overflow-hidden border-b border-white">
-                <AnimalImage animal={animals[1]} className="w-[150%] h-[200%] max-w-none" style={{ transform: 'translate(-33%, 0)' }} />
-              </div>
-              <div className="h-1/2 w-full overflow-hidden">
-                <AnimalImage animal={animals[2]} className="w-[150%] h-[200%] max-w-none" style={{ transform: 'translate(-33%, -50%)' }} />
-              </div>
-            </div>
-          </>
-        )}
-        {count === 4 && (
-          <>
-            <div className="w-1/4 h-full overflow-hidden border-r border-white">
-              <AnimalImage animal={animals[0]} className="w-[400%] h-full max-w-none" />
-            </div>
-            <div className="w-1/2 h-full flex flex-col border-r border-white">
-              <div className="h-1/2 w-full overflow-hidden border-b border-white">
-                <AnimalImage animal={animals[1]} className="w-[200%] h-[200%] max-w-none" style={{ transform: 'translate(-25%, 0)' }} />
-              </div>
-              <div className="h-1/2 w-full overflow-hidden">
-                <AnimalImage animal={animals[2]} className="w-[200%] h-[200%] max-w-none" style={{ transform: 'translate(-25%, -50%)' }} />
-              </div>
-            </div>
-            <div className="w-1/4 h-full overflow-hidden">
-              <AnimalImage animal={animals[3]} className="w-[400%] h-full max-w-none" style={{ transform: 'translateX(-75%)' }} />
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans text-slate-800">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
-        
-        {/* --- タイトル画面 --- */}
-        {screen === 'title' && (
-          <div className="flex flex-col items-center justify-center py-20 px-8 text-center animate-in fade-in zoom-in duration-500">
-            <h1 className="text-6xl font-black text-indigo-600 mb-8 tracking-tighter">oUMA-san</h1>
-            <button 
-              onClick={handleStart}
-              className="group relative px-12 py-4 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-200 flex items-center gap-2 text-xl"
-            >
-              <Play className="fill-current" size={24} />
-              START
-            </button>
-            <p className="mt-8 text-slate-500 font-medium">お馬さんを捕獲せよ</p>
-          </div>
-        )}
-
-        {/* --- ゲーム画面 --- */}
-        {screen === 'game' && (
-          <div className="p-6 flex flex-col gap-6 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-2xl font-black text-slate-400">GAME</h2>
-              <button 
-                onClick={resetGame}
-                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold"
-              >
-                <RefreshCw size={16} /> RESET
-              </button>
-            </div>
-
-            {/* 動物表示・名前表示枠 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center p-2 border-4 border-slate-100">
-                <CompositeView data={displayImage} />
-              </div>
-              <div className="flex flex-col justify-center items-center bg-indigo-50 rounded-2xl p-8 border-4 border-indigo-100">
-                <span className="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">Current Identity</span>
-                <span className="text-4xl font-black text-indigo-900 tracking-widest break-all text-center">
-                  {displayName}
-                </span>
-              </div>
-            </div>
-
-            {/* 出現エリア */}
-            <div className="space-y-3">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Shadow Area (Select 1-4)</label>
-              <div className="flex flex-wrap gap-3 p-4 bg-slate-100 rounded-2xl min-h-[120px] justify-center items-center">
-                {appearingAnimals.map((animal, idx) => (
-                  <button
-                    key={`${currentName}-${idx}`}
-                    onClick={() => toggleSelect(idx)}
-                    disabled={isProcessing}
-                    className={`relative w-20 h-20 rounded-xl transition-all transform hover:scale-105 active:scale-95 overflow-hidden shadow-sm border-2 ${
-                      selectedIndices.includes(idx) ? 'border-indigo-500 ring-4 ring-indigo-200 scale-105' : 'border-transparent'
-                    }`}
-                  >
-                    {/* 影としての表示 */}
-                    <div className="absolute inset-0 bg-slate-800 flex items-center justify-center p-2">
-                      <div className="w-full h-full filter brightness-0 invert opacity-60">
-                         <AnimalImage animal={animal} className="bg-transparent" />
-                      </div>
+            const AnimalImage = ({ animal, className = "", style = {} }) => {
+                const src = `images/${animal.name}_${animal.pattern}.png`;
+                return (
+                    <div className={`relative overflow-hidden bg-gray-100 flex items-center justify-center ${className}`} style={style}>
+                        <img 
+                            src={src} 
+                            alt={animal.name} 
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                            }}
+                        />
+                        <div className="hidden absolute inset-0 flex items-center justify-center text-4xl bg-white">
+                            {animal.emoji}
+                        </div>
                     </div>
-                    {selectedIndices.includes(idx) && (
-                      <div className="absolute top-1 right-1 bg-indigo-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                        {selectedIndices.indexOf(idx) + 1}
-                      </div>
-                    )}
-                  </button>
-                ))}
-                {appearingAnimals.length === 0 && <span className="text-slate-400 italic">No animals appeared...</span>}
-              </div>
-            </div>
+                );
+            };
 
-            {/* 操作ボタン */}
-            <div className="flex justify-center pt-2">
-              <button
-                onClick={handleCapture}
-                disabled={selectedIndices.length === 0 || isProcessing}
-                className={`w-full py-4 rounded-2xl font-black text-xl transition-all shadow-lg ${
-                  selectedIndices.length > 0 && !isProcessing
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:-translate-y-1'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                }`}
-              >
-                {isProcessing ? 'CAPTURING...' : `CAPTURE (${selectedIndices.length})`}
-              </button>
-            </div>
-          </div>
-        )}
+            const CompositeView = ({ data }) => {
+                if (!data || data.type === 'escape') {
+                    return (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-200 text-gray-500 rounded-lg">
+                            {data?.type === 'escape' ? (
+                                <span className="text-xl font-bold text-red-500">{data.text}</span>
+                            ) : (
+                                <span className="text-sm">捕獲エリア</span>
+                            )}
+                        </div>
+                    );
+                }
 
-        {/* --- クリア画面 --- */}
-        {screen === 'clear' && (
-          <div className="flex flex-col items-center justify-center py-24 px-8 text-center animate-in zoom-in duration-700">
-            <div className="mb-6 p-4 bg-yellow-100 rounded-full text-yellow-500 animate-bounce">
-              <CheckCircle2 size={64} />
-            </div>
-            <h1 className="text-5xl font-black text-slate-800 mb-4">GAME CLEAR!</h1>
-            <p className="text-slate-500 mb-12 max-w-xs">おめでとうございます！幻の「お馬さん」の捕獲に成功しました。</p>
-            <button 
-              onClick={() => setScreen('title')}
-              className="group px-10 py-4 bg-slate-800 text-white font-bold rounded-full hover:bg-slate-900 transition-all flex items-center gap-2"
-            >
-              <RefreshCw size={20} className="group-hover:rotate-180 transition-transform duration-500" />
-              BACK TO TITLE
-            </button>
-          </div>
-        )}
+                const { animals, composite, count } = data;
+                if (!composite) {
+                    return <AnimalImage animal={animals[0]} className="w-full h-full rounded-lg border-2 border-indigo-500 shadow-lg" />;
+                }
 
-      </div>
-      
-      {/* 画面外のデバッグ情報/ヒント */}
-      <div className="fixed bottom-4 right-4 text-[10px] text-slate-400 bg-white/80 p-2 rounded shadow-sm hidden md:block">
-        Hint: OHEBI(L/O) + OTANUKI(Z/A) + OTORA(F/U) + OSARU(R/I) in sequence...
-      </div>
-    </div>
-  );
-};
+                return (
+                    <div className="w-full h-full relative rounded-lg border-2 border-indigo-500 shadow-lg overflow-hidden flex">
+                        {count === 2 && (
+                            <React.Fragment>
+                                <div className="w-1/2 h-full overflow-hidden border-r border-white">
+                                    <AnimalImage animal={animals[0]} className="w-[200%] h-full max-w-none" />
+                                </div>
+                                <div className="w-1/2 h-full overflow-hidden">
+                                    <AnimalImage animal={animals[1]} className="w-[200%] h-full max-w-none" style={{ transform: 'translateX(-50%)' }} />
+                                </div>
+                            </React.Fragment>
+                        )}
+                        {count === 3 && (
+                            <React.Fragment>
+                                <div className="w-1/3 h-full overflow-hidden border-r border-white">
+                                    <AnimalImage animal={animals[0]} className="w-[300%] h-full max-w-none" />
+                                </div>
+                                <div className="w-2/3 h-full flex flex-col">
+                                    <div className="h-1/2 w-full overflow-hidden border-b border-white">
+                                        <AnimalImage animal={animals[1]} className="w-[150%] h-[200%] max-w-none" style={{ transform: 'translate(-33%, 0)' }} />
+                                    </div>
+                                    <div className="h-1/2 w-full overflow-hidden">
+                                        <AnimalImage animal={animals[2]} className="w-[150%] h-[200%] max-w-none" style={{ transform: 'translate(-33%, -50%)' }} />
+                                    </div>
+                                </div>
+                            </React.Fragment>
+                        )}
+                        {count === 4 && (
+                            <React.Fragment>
+                                <div className="w-1/4 h-full overflow-hidden border-r border-white">
+                                    <AnimalImage animal={animals[0]} className="w-[400%] h-full max-w-none" />
+                                </div>
+                                <div className="w-1/2 h-full flex flex-col border-r border-white">
+                                    <div className="h-1/2 w-full overflow-hidden border-b border-white">
+                                        <AnimalImage animal={animals[1]} className="w-[200%] h-[200%] max-w-none" style={{ transform: 'translate(-25%, 0)' }} />
+                                    </div>
+                                    <div className="h-1/2 w-full overflow-hidden">
+                                        <AnimalImage animal={animals[2]} className="w-[200%] h-[200%] max-w-none" style={{ transform: 'translate(-25%, -50%)' }} />
+                                    </div>
+                                </div>
+                                <div className="w-1/4 h-full overflow-hidden">
+                                    <AnimalImage animal={animals[3]} className="w-[400%] h-full max-w-none" style={{ transform: 'translateX(-75%)' }} />
+                                </div>
+                            </React.Fragment>
+                        )}
+                    </div>
+                );
+            };
 
-ReactDOM.render(<App />, document.getElementById('root'));
-  </script>
+            return (
+                <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans text-slate-800">
+                    <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+                        {screen === 'title' && (
+                            <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
+                                <h1 className="text-6xl font-black text-indigo-600 mb-8 tracking-tighter">oUMA-san</h1>
+                                <button onClick={handleStart} className="px-12 py-4 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg flex items-center gap-2 text-xl">
+                                    <Play size={24} /> START
+                                </button>
+                                <p className="mt-8 text-slate-500 font-medium">お馬さんを捕獲せよ</p>
+                            </div>
+                        )}
+                        {screen === 'game' && (
+                            <div className="p-6 flex flex-col gap-6">
+                                <div className="flex justify-between items-center mb-2">
+                                    <h2 className="text-2xl font-black text-slate-400">GAME</h2>
+                                    <button onClick={resetGame} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg flex items-center gap-1 text-sm font-bold">
+                                        <RefreshCw /> RESET
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center p-2 border-4 border-slate-100">
+                                        <CompositeView data={displayImage} />
+                                    </div>
+                                    <div className="flex flex-col justify-center items-center bg-indigo-50 rounded-2xl p-8 border-4 border-indigo-100">
+                                        <span className="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">Current Identity</span>
+                                        <span className="text-4xl font-black text-indigo-900 tracking-widest break-all text-center">{displayName}</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Shadow Area</label>
+                                    <div className="flex flex-wrap gap-3 p-4 bg-slate-100 rounded-2xl min-h-[120px] justify-center items-center">
+                                        {appearingAnimals.map((animal, idx) => (
+                                            <button key={`${currentName}-${idx}`} onClick={() => toggleSelect(idx)} disabled={isProcessing} className={`relative w-20 h-20 rounded-xl transition-all border-2 ${selectedIndices.includes(idx) ? 'border-indigo-500 ring-4 ring-indigo-200 scale-105' : 'border-transparent'}`}>
+                                                <div className="absolute inset-0 bg-slate-800 flex items-center justify-center p-2">
+                                                    <div className="w-full h-full filter brightness-0 invert opacity-60">
+                                                        <AnimalImage animal={animal} className="bg-transparent" />
+                                                    </div>
+                                                </div>
+                                                {selectedIndices.includes(idx) && <div className="absolute top-1 right-1 bg-indigo-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{selectedIndices.indexOf(idx) + 1}</div>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <button onClick={handleCapture} disabled={selectedIndices.length === 0 || isProcessing} className={`w-full py-4 rounded-2xl font-black text-xl shadow-lg ${selectedIndices.length > 0 && !isProcessing ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                                    {isProcessing ? 'CAPTURING...' : `CAPTURE (${selectedIndices.length})`}
+                                </button>
+                            </div>
+                        )}
+                        {screen === 'clear' && (
+                            <div className="flex flex-col items-center justify-center py-24 px-8 text-center">
+                                <div className="mb-6 p-4 bg-yellow-100 rounded-full text-yellow-500"><CheckCircle2 size={64} /></div>
+                                <h1 className="text-5xl font-black text-slate-800 mb-4">GAME CLEAR!</h1>
+                                <button onClick={() => setScreen('title')} className="px-10 py-4 bg-slate-800 text-white font-bold rounded-full flex items-center gap-2">
+                                    <RefreshCw /> BACK TO TITLE
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
