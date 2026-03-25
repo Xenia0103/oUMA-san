@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORCAS Basketball Team | Official Website</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .font-oswald {
+            font-family: 'Oswald', sans-serif;
+        }
+        .hero-gradient {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=2090&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-8 h-8 text-blue-700" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                    </svg>
+                    <span class="text-2xl font-bold font-oswald tracking-wider">ORCAS</span>
+                </div>
+                <div class="hidden md:flex space-x-8 font-bold text-sm uppercase tracking-widest">
+                    <a href="#about" class="hover:text-blue-700 transition">About</a>
+                    <a href="#members" class="hover:text-blue-700 transition">Members</a>
+                    <a href="#schedule" class="hover:text-blue-700 transition">Schedule</a>
+                    <a href="#join" class="hover:text-blue-700 transition">Join Us</a>
+                </div>
+                <button id="mobile-menu-button" class="md:hidden p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative h-[80vh] flex items-center justify-center text-white hero-gradient">
+        <div class="text-center px-4">
+            <h2 class="text-xl md:text-2xl font-oswald mb-2 tracking-[0.3em] uppercase opacity-90">Osaka Social Basketball Team</h2>
+            <h1 class="text-6xl md:text-8xl font-oswald font-bold mb-6 tracking-tighter italic">ORCAS</h1>
+            <div class="w-24 h-1 bg-blue-500 mx-auto mb-8"></div>
+            <a href="#join" class="bg-blue-700 hover:bg-blue-800 text-white px-8 py-4 rounded-full font-bold transition transform hover:scale-105 inline-block">
+                入部案内はこちら
+            </a>
+        </div>
+    </header>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-white">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-oswald font-bold mb-2">ABOUT US</h2>
+                <p class="text-slate-500">チーム紹介</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold border-l-4 border-blue-700 pl-4">大阪から、頂点を目指す。</h3>
+                    <p class="leading-relaxed text-slate-600">
+                        ORCAS（オルカス）は、大阪府社会人リーグ3部に所属するバスケットボールチームです。
+                        「楽しく、かつ真剣に」をモットーに、毎週土日に汗を流しています。
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-slate-50 rounded-lg">
+                            <span class="text-xs text-slate-400 block mb-1">活動日時</span>
+                            <span class="font-bold text-slate-700">土曜日・日曜日</span>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-lg">
+                            <span class="text-xs text-slate-400 block mb-1">所属リーグ</span>
+                            <span class="font-bold text-slate-700">大阪府社会人 3部</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-900 text-white p-8 rounded-2xl shadow-xl">
+                    <h4 class="font-bold mb-4 text-blue-400">主な活動拠点</h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start space-x-3">
+                            <svg class="w-5 h-5 mt-1 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <span>肥後橋体育館</span>
+                        </li>
+                        <li class="flex items-start space-x-3 text-slate-400 italic">または</li>
+                        <li class="flex items-start space-x-3">
+                            <svg class="w-5 h-5 mt-1 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <span>西梅田体育館</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Members Section -->
+    <section id="members" class="py-20 bg-slate-100">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-oswald font-bold mb-2 uppercase">Members</h2>
+                <p class="text-slate-500">主力選手紹介</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Member 01 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-lg card-hover">
+                    <div class="bg-slate-200 h-64 flex items-center justify-center relative">
+                        <span class="text-8xl font-oswald font-bold text-white">01</span>
+                        <div class="absolute bottom-4 left-4 bg-blue-700 text-white px-3 py-1 text-sm font-bold">PG</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-1">合田 隼人</h3>
+                        <p class="text-slate-400 text-sm mb-4">GODA HAYATO</p>
+                        <div class="flex justify-between text-sm border-t pt-4 border-slate-100">
+                            <span class="text-slate-500 italic">177cm</span>
+                            <span class="font-bold">甲南大学</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Member 12 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-lg card-hover">
+                    <div class="bg-slate-300 h-64 flex items-center justify-center relative">
+                        <span class="text-8xl font-oswald font-bold text-white">12</span>
+                        <div class="absolute bottom-4 left-4 bg-blue-700 text-white px-3 py-1 text-sm font-bold">SF</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-1">山田 康太</h3>
+                        <p class="text-slate-400 text-sm mb-4">YAMADA KOTA</p>
+                        <div class="flex justify-between text-sm border-t pt-4 border-slate-100">
+                            <span class="text-slate-500 italic">180cm</span>
+                            <span class="font-bold">大阪大学</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Member 16 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-lg card-hover">
+                    <div class="bg-slate-400 h-64 flex items-center justify-center relative">
+                        <span class="text-8xl font-oswald font-bold text-white">16</span>
+                        <div class="absolute bottom-4 left-4 bg-blue-700 text-white px-3 py-1 text-sm font-bold">C</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-1">太田 靖</h3>
+                        <p class="text-slate-400 text-sm mb-4">OTA YASUSHI</p>
+                        <div class="flex justify-between text-sm border-t pt-4 border-slate-100">
+                            <span class="text-slate-500 italic">195cm</span>
+                            <span class="font-bold">近畿大学</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Schedule Section -->
+    <section id="schedule" class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-oswald font-bold mb-2 uppercase">Next Matches</h2>
+                <p class="text-slate-500">試合スケジュール</p>
+            </div>
+            <div class="space-y-4">
+                <div class="flex flex-col md:flex-row bg-slate-50 p-6 rounded-xl border-l-8 border-blue-700 items-center justify-between">
+                    <div class="text-center md:text-left mb-4 md:mb-0">
+                        <span class="text-blue-700 font-oswald font-bold text-2xl">05/24 SUN</span>
+                        <p class="text-sm text-slate-400">TIP OFF 14:00</p>
+                    </div>
+                    <div class="text-center px-4">
+                        <span class="block text-xs text-slate-400 mb-1">OPPONENT</span>
+                        <span class="text-xl font-bold">MONGOL900</span>
+                    </div>
+                    <div class="text-center md:text-right">
+                        <span class="block text-xs text-slate-400 mb-1">PLACE</span>
+                        <span class="font-bold">大阪中央体育館</span>
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row bg-slate-50 p-6 rounded-xl border-l-8 border-slate-400 items-center justify-between opacity-80">
+                    <div class="text-center md:text-left mb-4 md:mb-0">
+                        <span class="text-slate-600 font-oswald font-bold text-2xl">06/07 SUN</span>
+                        <p class="text-sm text-slate-400">TIP OFF 14:00</p>
+                    </div>
+                    <div class="text-center px-4">
+                        <span class="block text-xs text-slate-400 mb-1">OPPONENT</span>
+                        <span class="text-xl font-bold">BIGAN</span>
+                    </div>
+                    <div class="text-center md:text-right">
+                        <span class="block text-xs text-slate-400 mb-1">PLACE</span>
+                        <span class="font-bold">轟アリーナ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Join Us Section -->
+    <section id="join" class="py-20 bg-slate-900 text-white">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="text-4xl font-oswald font-bold mb-6">WANT TO PLAY WITH US?</h2>
+            <p class="text-xl text-blue-300 mb-10">
+                大阪でバスケをしたい方、大歓迎!!<br>
+                <span class="text-sm text-slate-400">経験者・ブランクのある方・まずは見学からという方もお気軽にご連絡ください。</span>
+            </p>
+            
+            <div class="bg-white/10 p-8 rounded-2xl backdrop-blur-sm border border-white/20 inline-block w-full max-w-lg">
+                <h3 class="text-lg font-bold mb-4">CONTACT</h3>
+                <div class="flex flex-col items-center space-y-4">
+                    <a href="mailto:contact@orcas.example.com" class="text-2xl font-bold hover:text-blue-400 transition break-all">
+                        contact@orcas.example.com
+                    </a>
+                    <button class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-bold transition">
+                        メールを送る
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 text-slate-600 py-12 text-center border-t border-slate-900">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-col items-center">
+                <div class="flex items-center space-x-2 text-white mb-4">
+                    <svg class="w-6 h-6 text-blue-700" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                    </svg>
+                    <span class="text-xl font-bold font-oswald tracking-widest uppercase">ORCAS</span>
+                </div>
+                <p class="text-sm mb-6 uppercase tracking-widest">Victory with Passion in Osaka</p>
+                <div class="flex space-x-6 mb-8 text-xs font-bold">
+                    <a href="#" class="hover:text-white transition">Instagram</a>
+                    <a href="#" class="hover:text-white transition">X (Twitter)</a>
+                    <a href="#" class="hover:text-white transition">Facebook</a>
+                </div>
+                <p class="text-xs">&copy; 2024 ORCAS Basketball Team. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Simple Mobile Menu Toggle (Logical placeholder)
+        const menuBtn = document.getElementById('mobile-menu-button');
+        menuBtn.addEventListener('click', () => {
+            const msg = document.createElement('div');
+            msg.className = "fixed top-20 right-4 bg-white shadow-lg p-4 rounded-lg z-[60] text-sm";
+            msg.innerText = "メニュー機能（デモ）: About, Members, Schedule, Join Us";
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 2000);
+        });
+    </script>
+</body>
+</html>
