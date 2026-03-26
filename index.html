@@ -18,11 +18,11 @@
         
         /* 目が光るアニメーション */
         @keyframes eye-glow {
-            0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 2px #fff); }
-            50% { opacity: 1; filter: drop-shadow(0 0 5px #ff0); }
+            0%, 100% { opacity: 0.4; filter: drop-shadow(0 0 1px #fff); }
+            50% { opacity: 1; filter: drop-shadow(0 0 6px #ff0); }
         }
         .animate-eye-glow {
-            animation: eye-glow 2s infinite ease-in-out;
+            animation: eye-glow 2.5s infinite ease-in-out;
         }
     </style>
 </head>
@@ -36,6 +36,69 @@
         const Play = ({ size }) => <i data-lucide="play" style={{width: size, height: size}}></i>;
 
         const { useState, useEffect, useMemo } = React;
+
+        // --- 効果音合成ユーティリティ ---
+        const playSE = (type) => {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            const now = ctx.currentTime;
+
+            if (type === 'capture') {
+                // 捕獲成功: キラキラした高い音
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.exponentialRampToValueAtTime(1320, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'escape') {
+                // 逃走: 低い鈍い音
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(110, now);
+                osc.frequency.linearRampToValueAtTime(55, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'clear') {
+                // クリア: ファンファーレ
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((freq, i) => {
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    o.connect(g);
+                    g.connect(ctx.destination);
+                    o.type = 'triangle';
+                    o.frequency.setValueAtTime(freq, now + i * 0.15);
+                    g.gain.setValueAtTime(0.1, now + i * 0.15);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.4);
+                    o.start(now + i * 0.15);
+                    o.stop(now + i * 0.15 + 0.5);
+                });
+            } else if (type === 'click') {
+                // ボタンクリック: 短いポップ音
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'select') {
+                // 選択音: 短い高い音
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(660, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            }
+        };
 
         // --- 定数定義 ---
         const ANIMAL_DATA = {
@@ -78,24 +141,23 @@
                 if (window.lucide) window.lucide.createIcons();
             });
 
-            // 現在の名前から出現する動物のリストを生成
             const appearingAnimals = useMemo(() => {
                 if (!currentName) return [];
                 return currentName.split('').map(char => CHAR_TO_ANIMAL[char.toUpperCase()]).filter(Boolean);
             }, [currentName]);
 
-            // 動物のランダムな配置を計算（左から右への順序を維持）
             useEffect(() => {
                 const count = appearingAnimals.length;
                 if (count > 0) {
-                    const segmentWidth = 90 / count; // 画面幅を分割
+                    const segmentWidth = 90 / count;
                     const layouts = appearingAnimals.map((_, i) => {
                         const minLeft = 5 + (i * segmentWidth);
-                        const randomLeft = minLeft + Math.random() * (segmentWidth * 0.8); // 区画内で余裕を持たせて配置
+                        const randomLeft = minLeft + Math.random() * (segmentWidth * 0.8);
                         return {
-                            top: (Math.random() * 50 + 20).toFixed(2) + "%", // 20% to 70%
+                            top: (Math.random() * 50 + 20).toFixed(2) + "%",
                             left: randomLeft.toFixed(2) + "%",
-                            scale: (Math.random() * 0.5 + 0.75).toFixed(2), // 0.75 to 1.25
+                            scale: (Math.random() * 0.4 + 0.8).toFixed(2),
+                            delay: (Math.random() * 2).toFixed(2) + "s"
                         };
                     });
                     setAnimalLayouts(layouts);
@@ -105,6 +167,7 @@
             }, [appearingAnimals]);
 
             const resetGame = () => {
+                playSE('click');
                 setCurrentName(INITIAL_NAME);
                 setDisplayName(INITIAL_NAME);
                 setDisplayImage(null);
@@ -113,12 +176,14 @@
             };
 
             const handleStart = () => {
+                playSE('click');
                 resetGame();
                 setScreen('game');
             };
 
             const toggleSelect = (index) => {
                 if (isProcessing) return;
+                playSE('select');
                 setSelectedIndices(prev => {
                     if (prev.includes(index)) return prev.filter(i => i !== index);
                     if (prev.length >= 4) return prev;
@@ -131,8 +196,8 @@
                 
                 const selectedAnimals = selectedIndices.map(i => appearingAnimals[i]);
 
-                // クリア判定
                 if (selectedAnimals.length === 1 && selectedAnimals[0].name === 'OUMA' && selectedAnimals[0].pattern === 1) {
+                    playSE('clear');
                     setScreen('clear');
                     return;
                 }
@@ -143,9 +208,11 @@
                 if (selectedAnimals.length === 1) {
                     const animal = selectedAnimals[0];
                     if (animal.pattern === 2) {
+                        playSE('escape');
                         nextName = "";
                         nextDisplay = { type: 'escape', text: '逃げられた！' };
                     } else {
+                        playSE('capture');
                         nextName = animal.name;
                         nextDisplay = { animals: [animal], composite: false };
                     }
@@ -154,9 +221,11 @@
                     const hasDuplicate = new Set(species).size !== species.length;
 
                     if (hasDuplicate) {
+                        playSE('escape');
                         nextName = "";
                         nextDisplay = { type: 'escape', text: '仲間割れして逃げられた！' };
                     } else {
+                        playSE('capture');
                         const specialOrder = ['OSARU', 'OTANUKI', 'OTORA', 'OHEBI'];
                         const isSpecial = selectedAnimals.length === 4 && 
                                           selectedAnimals.every((a, idx) => a.name === specialOrder[idx]);
@@ -241,11 +310,9 @@
                         )}
                         {count === 4 && (
                             <React.Fragment>
-                                {/* 1番目: 左1/3 */}
                                 <div className="w-[33.33%] h-full overflow-hidden border-r border-white">
                                     <AnimalImage animal={animals[0]} className="w-[300%] h-full max-w-none" />
                                 </div>
-                                {/* 2・3番目: 中央1/3の上下 */}
                                 <div className="w-[33.33%] h-full flex flex-col border-r border-white">
                                     <div className="h-1/2 w-full overflow-hidden border-b border-white">
                                         <AnimalImage animal={animals[1]} className="w-[300%] h-[200%] max-w-none" style={{ transform: 'translate(-33.33%, 0)' }} />
@@ -254,7 +321,6 @@
                                         <AnimalImage animal={animals[2]} className="w-[300%] h-[200%] max-w-none" style={{ transform: 'translate(-33.33%, -50%)' }} />
                                     </div>
                                 </div>
-                                {/* 4番目: 右1/3 */}
                                 <div className="w-[33.33%] h-full overflow-hidden">
                                     <AnimalImage animal={animals[3]} className="w-[300%] h-full max-w-none" style={{ transform: 'translateX(-66.66%)' }} />
                                 </div>
@@ -270,7 +336,7 @@
                         {screen === 'title' && (
                             <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
                                 <h1 className="text-6xl font-black text-indigo-600 mb-8 tracking-tighter">oUMA-san</h1>
-                                <button onClick={handleStart} className="px-12 py-4 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg flex items-center gap-2 text-xl">
+                                <button onClick={handleStart} className="px-12 py-4 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-lg flex items-center gap-2 text-xl active:scale-95">
                                     <Play size={24} /> START
                                 </button>
                                 <p className="mt-8 text-slate-500 font-medium">お馬さんを捕獲せよ</p>
@@ -280,7 +346,7 @@
                             <div className="p-6 flex flex-col gap-6">
                                 <div className="flex justify-between items-center mb-2">
                                     <h2 className="text-2xl font-black text-slate-400">GAME</h2>
-                                    <button onClick={resetGame} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg flex items-center gap-1 text-sm font-bold">
+                                    <button onClick={resetGame} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg flex items-center gap-1 text-sm font-bold transition-colors">
                                         <RefreshCw /> RESET
                                     </button>
                                 </div>
@@ -299,10 +365,10 @@
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Shadow Area (Select Eyes)</label>
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">闇の中</label>
                                     <div className="relative w-full h-[240px] bg-black rounded-2xl overflow-hidden border-4 border-slate-900 cursor-crosshair">
                                         {appearingAnimals.map((animal, idx) => {
-                                            const layout = animalLayouts[idx] || { top: '50%', left: '50%', scale: '1' };
+                                            const layout = animalLayouts[idx] || { top: '50%', left: '50%', scale: '1', delay: '0s' };
                                             const isSelected = selectedIndices.includes(idx);
                                             return (
                                                 <button
@@ -318,12 +384,16 @@
                                                     }}
                                                     className={`group transition-all duration-300 p-4 rounded-full ${isSelected ? 'ring-2 ring-indigo-500' : ''}`}
                                                 >
-                                                    {/* 光る目 */}
                                                     <div className="flex gap-4 items-center justify-center">
-                                                        <div className={`w-1.5 h-1.5 bg-yellow-100 rounded-full animate-eye-glow ${isSelected ? 'bg-indigo-400' : ''}`}></div>
-                                                        <div className={`w-1.5 h-1.5 bg-yellow-100 rounded-full animate-eye-glow ${isSelected ? 'bg-indigo-400' : ''}`}></div>
+                                                        <div 
+                                                            className={`w-1.5 h-1.5 rounded-full animate-eye-glow ${isSelected ? 'bg-indigo-400' : 'bg-yellow-100'}`}
+                                                            style={{ animationDelay: layout.delay }}
+                                                        ></div>
+                                                        <div 
+                                                            className={`w-1.5 h-1.5 rounded-full animate-eye-glow ${isSelected ? 'bg-indigo-400' : 'bg-yellow-100'}`}
+                                                            style={{ animationDelay: layout.delay }}
+                                                        ></div>
                                                     </div>
-                                                    {/* 選択順序の表示 */}
                                                     {isSelected && (
                                                         <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
                                                             {selectedIndices.indexOf(idx) + 1}
@@ -333,8 +403,10 @@
                                             );
                                         })}
                                         {appearingAnimals.length === 0 && (
-                                            <div className="absolute inset-0 flex items-center justify-center text-slate-600 font-bold text-sm select-none">
-                                                ここには動物がいないようです...
+                                            <div className="absolute inset-0 flex items-center justify-center px-4">
+                                                <div className="text-slate-500 font-black text-xl md:text-2xl text-center select-none opacity-80">
+                                                    ここには動物がいないようです...
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -350,7 +422,7 @@
                                     <AnimalImage animal={{...ANIMAL_DATA.OUMA, pattern: 1}} className="w-full h-full" />
                                 </div>
                                 <h1 className="text-5xl font-black text-indigo-900 mb-8 tracking-tighter">お馬さん捕獲！</h1>
-                                <button onClick={() => setScreen('title')} className="px-10 py-4 bg-slate-800 text-white font-bold rounded-full flex items-center gap-2 hover:bg-slate-900 transition-colors">
+                                <button onClick={() => { playSE('click'); setScreen('title'); }} className="px-10 py-4 bg-slate-800 text-white font-bold rounded-full flex items-center gap-2 hover:bg-slate-900 transition-colors active:scale-95">
                                     <RefreshCw /> BACK TO TITLE
                                 </button>
                             </div>
