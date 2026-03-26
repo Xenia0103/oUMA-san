@@ -213,21 +213,19 @@
                 setIsProcessing(true);
                 const selectedAnimals = selectedIndices.map(i => appearingAnimals[i]);
 
-                // クリア判定
-                if (selectedAnimals.length === 1 && selectedAnimals[0].name === 'OUMA' && selectedAnimals[0].pattern === 1) {
-                    playSE('clear');
-                    setScreen('clear');
-                    setIsProcessing(false);
-                    return;
-                }
-
                 playSE('reveal');
 
                 let targetName = "";
                 let previewDisplay = null;
                 let isEscape = false;
+                let isClear = false;
 
-                if (selectedAnimals.length === 1) {
+                // 条件判定
+                if (selectedAnimals.length === 1 && selectedAnimals[0].name === 'OUMA' && selectedAnimals[0].pattern === 1) {
+                    isClear = true;
+                    targetName = "OUMA";
+                    previewDisplay = { animals: [selectedAnimals[0]], composite: false };
+                } else if (selectedAnimals.length === 1) {
                     const animal = selectedAnimals[0];
                     if (animal.pattern === 2) {
                         isEscape = true;
@@ -254,15 +252,31 @@
                     }
                 }
 
+                // 正体を表示し、名前は判定中のため「???」
                 setDisplayImage(previewDisplay);
                 setDisplayName("???");
                 
+                // 1秒後に判定結果を適用
                 setTimeout(() => {
-                    if (isEscape) {
+                    if (isClear) {
+                        // クリア演出: 1秒間 OUMA を表示してからクリア画面へ
+                        playSE('capture');
+                        setDisplayName("OUMA");
+                        setCurrentName("OUMA");
+                        
+                        setTimeout(() => {
+                            playSE('clear');
+                            setScreen('clear');
+                            setIsProcessing(false);
+                        }, 1000);
+                        
+                    } else if (isEscape) {
                         playSE('escape');
                         setDisplayImage({ type: 'escape', text: '逃げられた！' });
                         setDisplayName("");
                         setCurrentName("");
+                        setSelectedIndices([]);
+                        setIsProcessing(false);
                     } else {
                         playSE('capture');
                         setShowSuccessToast(true);
@@ -270,9 +284,9 @@
                         
                         setDisplayName(targetName);
                         setCurrentName(targetName);
+                        setSelectedIndices([]);
+                        setIsProcessing(false);
                     }
-                    setSelectedIndices([]);
-                    setIsProcessing(false);
                 }, 1000);
             };
 
@@ -386,10 +400,9 @@
                                 </button>
                                 <p className="mt-8 text-slate-500 text-lg font-bold tracking-wide">お馬さんを捕獲して窮地を突破せよ！</p>
                                 
-                                {/* 薄い文言の追加 */}
                                 <div className="mt-12 space-y-1 text-[10px] text-slate-300 font-medium select-none">
                                     <p>ソースコードの閲覧を禁止します</p>
-                                    <p>ゲームクリアにURLを操作する必要はございません</p>
+                                    <p>ゲームクリアにURLを閲覧・操作する必要はございません</p>
                                 </div>
                             </div>
                         )}
@@ -408,7 +421,7 @@
                                     <div className="flex flex-col justify-center items-center bg-indigo-50 rounded-2xl p-8 border-4 border-indigo-100 min-h-[160px]">
                                         <span className="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">Current</span>
                                         <span className="text-4xl font-black text-indigo-900 tracking-widest break-all text-center h-12 flex items-center">{displayName}</span>
-                                        {displayName === "UMA" && (
+                                        {(displayName === "UMA" || displayName === "ONUE") && (
                                             <div className="text-red-600 text-sm font-bold mt-2 animate-pulse">
                                                 こ、これは未確認生物だ！
                                             </div>
@@ -453,7 +466,7 @@
                                                 </button>
                                             );
                                         })}
-                                        {appearingAnimals.length === 0 && (
+                                        {appearingAnimals.length === 0 && !isProcessing && (
                                             <div className="absolute inset-0 flex items-center justify-center px-4">
                                                 <div className="text-slate-500 font-black text-xl md:text-2xl text-center select-none opacity-80">
                                                     ここには動物がいないようです...
